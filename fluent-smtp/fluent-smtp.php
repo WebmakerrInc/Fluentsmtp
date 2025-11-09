@@ -44,6 +44,40 @@ function fluentSmtpInit() {
 
 fluentSmtpInit();
 
+
+add_filter('pre_set_site_transient_update_plugins', 'fluent_smtp_disable_plugin_updates');
+add_filter('site_transient_update_plugins', 'fluent_smtp_disable_plugin_updates');
+add_filter('pre_set_transient_update_plugins', 'fluent_smtp_disable_plugin_updates');
+
+if (!function_exists('fluent_smtp_disable_plugin_updates')) {
+    function fluent_smtp_disable_plugin_updates($transient) {
+        if (!is_object($transient)) {
+            return $transient;
+        }
+
+        $plugin_basename = plugin_basename(__FILE__);
+
+        if (isset($transient->response[$plugin_basename])) {
+            unset($transient->response[$plugin_basename]);
+        }
+
+        if (isset($transient->no_update[$plugin_basename])) {
+            unset($transient->no_update[$plugin_basename]);
+        }
+
+        return $transient;
+    }
+}
+
+add_filter('auto_update_plugin', function ($update, $item) {
+    if (isset($item->plugin) && $item->plugin === plugin_basename(__FILE__)) {
+        return false;
+    }
+
+    return $update;
+}, 10, 2);
+
+
 if (!function_exists('wp_mail')):
     function wp_mail($to, $subject, $message, $headers = '', $attachments = array()) {
         return fluentMailSend($to, $subject, $message, $headers, $attachments);

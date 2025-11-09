@@ -106,7 +106,7 @@ class AdminMenuHandler
 
     public function addMenu()
     {
-        $title = $this->app->applyCustomFilters('admin-menu-title', __('FluentSMTP', 'fluent-smtp'));
+        $title = $this->app->applyCustomFilters('admin-menu-title', __('Outgoing Emails', 'fluent-smtp'));
 
         add_submenu_page(
             'options-general.php',
