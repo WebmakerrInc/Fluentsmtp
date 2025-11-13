@@ -61,7 +61,7 @@ class ActionsRegistrar
      */
     protected function registerAdminMenu()
     {
-        \FluentMail\Includes\SettingsAccessBlocker::register();
+        \SettingsAccessBlocker::register();
 
         $adminMenuHandler = new AdminMenuHandler($this->app);
         $adminMenuHandler->addFluentMailMenu();
