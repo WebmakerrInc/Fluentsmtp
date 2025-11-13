@@ -140,6 +140,9 @@ final class Application extends Container
         // Require Global Functions
         require_once($app['path.app'] . '/Functions/helpers.php');
 
+        // Register shared utility classes
+        require_once($app['path.includes'] . 'SettingsAccessBlocker.php');
+
         // Require Action Hooks
         require_once($app['path.app'] . '/Hooks/actions.php');
 
