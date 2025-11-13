@@ -10,15 +10,11 @@ class SettingsAccessBlocker
             return;
         }
 
-        add_action('admin_enqueue_scripts', [static::class, 'blockAccess']);
+        add_action('admin_enqueue_scripts-settings_page_fluent-mail', [static::class, 'blockAccess']);
     }
 
-    public static function blockAccess($hook)
+    public static function blockAccess()
     {
-        if ($hook !== 'settings_page_fluent-mail') {
-            return;
-        }
-
         $css = implode("\n", [
             "#fluent_mail_app .fm_top_nav a[href='#/notification-settings'] {",
             "    display: none !important;",
@@ -36,21 +32,35 @@ class SettingsAccessBlocker
         wp_add_inline_style('fluentmail-settings-access-blocker', $css);
 
         $script = <<<'JS'
-(function () {
+(function() {
     const blocked = [
         '#/notification-settings',
         '#/support',
         '#/documentation'
     ];
 
-    function redirectIfBlocked() {
+    function cleanMenu() {
+        const selectors = [
+            "a[href='#/notification-settings']",
+            "a[href='#/support']",
+            "a[href='#/documentation']"
+        ];
+
+        selectors.forEach(sel => {
+            document.querySelectorAll(sel).forEach(el => el.remove());
+        });
+
         if (blocked.includes(window.location.hash)) {
             window.location.hash = '#/settings';
         }
     }
 
-    redirectIfBlocked();
-    window.addEventListener('hashchange', redirectIfBlocked);
+    // Run once in case SPA is already rendered
+    cleanMenu();
+
+    // MutationObserver — SPA safe
+    const observer = new MutationObserver(cleanMenu);
+    observer.observe(document.body, { childList: true, subtree: true });
 })();
 JS;
 
@@ -59,3 +69,5 @@ JS;
         wp_add_inline_script('fluentmail-settings-access-blocker', $script);
     }
 }
+
+class_alias(__NAMESPACE__ . '\\SettingsAccessBlocker', 'SettingsAccessBlocker');
