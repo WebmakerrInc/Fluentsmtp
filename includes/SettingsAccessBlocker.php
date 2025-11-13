@@ -38,9 +38,9 @@ class SettingsAccessBlocker
     public function enqueueAssets()
     {
         $css = <<<CSS
-        a[href^='#/'][href*='notification-settings'],
-        a[href^='#/'][href*='support'],
-        a[href^='#/'][href*='documentation'] {
+        #fluent_mail_app a[href^='#/'][href*='notification-settings'],
+        #fluent_mail_app a[href^='#/'][href*='support'],
+        #fluent_mail_app a[href^='#/'][href*='documentation'] {
             display: none !important;
         }
         CSS;
@@ -63,7 +63,12 @@ class SettingsAccessBlocker
                     'support',
                     'documentation'
                 ];
-                const fallbackHash = '#/settings';
+                const fallbackHash = '#/';
+                const appRoot = document.getElementById('fluent_mail_app');
+
+                if (!appRoot) {
+                    return;
+                }
 
                 const isBlockedHash = (hash) => {
                     if (!hash) {
@@ -75,14 +80,20 @@ class SettingsAccessBlocker
 
                 const removeBlockedLinks = () => {
                     const selector = "a[href^='#/']";
-                    document.querySelectorAll(selector).forEach((link) => {
+                    appRoot.querySelectorAll(selector).forEach((link) => {
                         const href = link.getAttribute('href') || '';
                         if (!isBlockedHash(href)) {
                             return;
                         }
 
-                        const parent = link.closest('li') || link;
-                        parent.remove();
+                        const parent = link.closest('li');
+
+                        if (parent && appRoot.contains(parent)) {
+                            parent.remove();
+                            return;
+                        }
+
+                        link.remove();
                     });
                 };
 
@@ -90,7 +101,7 @@ class SettingsAccessBlocker
                     removeBlockedLinks();
                 });
 
-                observer.observe(document.body, {
+                observer.observe(appRoot, {
                     childList: true,
                     subtree: true
                 });
