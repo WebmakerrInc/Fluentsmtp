@@ -6,6 +6,7 @@ use FluentMail\Includes\Core\Application;
 use FluentMail\App\Hooks\Handlers\AdminMenuHandler;
 use FluentMail\App\Hooks\Handlers\SchedulerHandler;
 use FluentMail\App\Hooks\Handlers\InitializeSiteHandler;
+use FluentMail\App\Hooks\Handlers\SettingsAccessBlocker;
 use WP_REST_Request;
 
 class ActionsRegistrar
@@ -50,6 +51,7 @@ class ActionsRegistrar
         $this->registerAdminMenu();
         $this->registerScheduler();
         $this->registerSiteInitialization();
+        $this->registerSettingsAccessBlocker();
         $this->registerCustomActions();
         $this->registerRestRoutes();
     }
@@ -85,6 +87,16 @@ class ActionsRegistrar
     protected function registerSiteInitialization()
     {
         (new InitializeSiteHandler)->addHandler();
+    }
+
+    /**
+     * Register handlers responsible for restricting settings access.
+     *
+     * @return void
+     */
+    protected function registerSettingsAccessBlocker()
+    {
+        (new SettingsAccessBlocker($this->app))->register();
     }
 
     /**
