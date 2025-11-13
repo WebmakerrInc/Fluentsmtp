@@ -38,9 +38,9 @@ class SettingsAccessBlocker
     public function enqueueAssets()
     {
         $css = <<<CSS
-        a[href='#/notification-settings'],
-        a[href='#/support'],
-        a[href='#/documentation'] {
+        a[href^='#/'][href*='notification-settings'],
+        a[href^='#/'][href*='support'],
+        a[href^='#/'][href*='documentation'] {
             display: none !important;
         }
         CSS;
@@ -58,23 +58,31 @@ class SettingsAccessBlocker
         ?>
         <script type="text/javascript">
             (function() {
-                const blocked = [
-                    '#/notification-settings',
-                    '#/support',
-                    '#/documentation'
+                const blockedSlugs = [
+                    'notification-settings',
+                    'support',
+                    'documentation'
                 ];
                 const fallbackHash = '#/settings';
 
+                const isBlockedHash = (hash) => {
+                    if (!hash) {
+                        return false;
+                    }
+
+                    return blockedSlugs.some((slug) => hash.includes(slug));
+                };
+
                 const removeBlockedLinks = () => {
-                    blocked.forEach((hash) => {
-                        const selector = `a[href='${hash}']`;
-                        document.querySelectorAll(selector).forEach((link) => {
-                            if (link.parentNode) {
-                                link.parentNode.removeChild(link);
-                            } else {
-                                link.remove();
-                            }
-                        });
+                    const selector = "a[href^='#/']";
+                    document.querySelectorAll(selector).forEach((link) => {
+                        const href = link.getAttribute('href') || '';
+                        if (!isBlockedHash(href)) {
+                            return;
+                        }
+
+                        const parent = link.closest('li') || link;
+                        parent.remove();
                     });
                 };
 
@@ -90,7 +98,7 @@ class SettingsAccessBlocker
                 removeBlockedLinks();
 
                 const enforceAllowedHash = () => {
-                    if (blocked.includes(window.location.hash)) {
+                    if (isBlockedHash(window.location.hash)) {
                         window.location.hash = fallbackHash;
                     }
                 };
